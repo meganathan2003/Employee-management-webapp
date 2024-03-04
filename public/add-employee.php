@@ -273,10 +273,74 @@
             padding: 5px;
             color: #999;
         }
+
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            position: absolute;
+            top: 55%;
+            right: 40%;
+            z-index: 1;
+            border: 8px solid #514b82;
+            animation:
+                l20-1 0.8s infinite linear alternate,
+                l20-2 1.6s infinite linear;
+        }
+
+        @keyframes l20-1 {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+            }
+
+            12.5% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+            }
+
+            25% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+            }
+
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            62.5% {
+                clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            75% {
+                clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            100% {
+                clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+            }
+        }
+
+        @keyframes l20-2 {
+            0% {
+                transform: scaleY(1) rotate(0deg)
+            }
+
+            49.99% {
+                transform: scaleY(1) rotate(135deg)
+            }
+
+            50% {
+                transform: scaleY(-1) rotate(0deg)
+            }
+
+            100% {
+                transform: scaleY(-1) rotate(-135deg)
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <div class="loader" id="loader"></div>
 
     <header>
         <div class="head">
@@ -381,13 +445,15 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("back-div").addEventListener("click", function() {
-                window.location.href = "index.php";
+                window.location.href = "employee.php";
             });
         });
 
         // Below the code for connectivity using the fetch api
         const token = sessionStorage.getItem('token');
-        
+        const loader = document.getElementById('loader');
+        loader.style.display = 'none';
+
         if (!token || token === '' || token === undefined || token === null) {
             window.location.href = 'error.php';
         } else {
@@ -406,7 +472,7 @@
                         }
                     })
                     .then(response => {
-                        console.log(response.data);
+                        loader.style.display = 'none';
                         const departmentNames = Object.values(response.data);
                         console.log(departmentNames);
                         departmentNames.forEach(name => {
@@ -440,28 +506,31 @@
                     contact_number: contactInput,
                     blood_group: bloodInput
                 };
-                console.log(data);
-                fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + token,
-                        },
-                        body: JSON.stringify(data)
-                    }).then(res => {
-                        if (!res.ok) {
-                            throw new Error(`HTTP ERROR ! ${res.status}`);
-                        } else {
-                            return res.json();
-                        }
-                    })
-                    .then(data => {
-                        console.log(data);
-                        window.location.href = 'employee.php';
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    })
+                if (loader) {
+                    loader.style.display = 'block';
+                    fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token,
+                            },
+                            body: JSON.stringify(data)
+                        }).then(res => {
+                            if (!res.ok) {
+                                throw new Error(`HTTP ERROR ! ${res.status}`);
+                            } else {
+                                return res.json();
+                            }
+                        })
+                        .then(data => {
+                            loader.style.display = 'none';
+                            window.location.href = 'employee.php';
+                        })
+                        .catch(error => {
+                            loader.style.display = 'none';
+                            console.log(error);
+                        });
+                }
             }
             dropdown();
         }

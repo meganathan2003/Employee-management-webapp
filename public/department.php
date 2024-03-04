@@ -321,10 +321,73 @@
             cursor: pointer;
             color: red;
         }
+
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            position: absolute;
+            top: 55%;
+            right: 40%;
+            z-index: 1;
+            border: 8px solid #514b82;
+            animation:
+                l20-1 0.8s infinite linear alternate,
+                l20-2 1.6s infinite linear;
+        }
+
+        @keyframes l20-1 {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+            }
+
+            12.5% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+            }
+
+            25% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+            }
+
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            62.5% {
+                clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            75% {
+                clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            100% {
+                clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+            }
+        }
+
+        @keyframes l20-2 {
+            0% {
+                transform: scaleY(1) rotate(0deg)
+            }
+
+            49.99% {
+                transform: scaleY(1) rotate(135deg)
+            }
+
+            50% {
+                transform: scaleY(-1) rotate(0deg)
+            }
+
+            100% {
+                transform: scaleY(-1) rotate(-135deg)
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="loader" id="loader"></div>
 
     <div id="blur-div">
         <header>
@@ -375,7 +438,7 @@
                 <h1>Departments</h1>
                 <div class="search-div">
                     <h6> <span id="count"></span> Departments</h6>
-                    <input id="search" type="text" placeholder="&#xF002;  Search" style="font-family:Arial, FontAwesome" />
+                    <input id="search" type="text" placeholder="&#xF002;  Search" style="font-family:Arial, FontAwesome" oninput="filterDepartments(event)" />
                 </div>
             </div>
 
@@ -412,17 +475,18 @@
     </div>
 
     <script>
+        const loader = document.getElementById('loader');
         document.addEventListener("DOMContentLoaded", function() {
             let addButton = document.getElementById("input-add-name");
             let inputContainer = document.getElementById("input-container");
+
 
             addButton.addEventListener("click", function() {
                 let newInputContainer = document.createElement("div");
                 newInputContainer.className = "input-with-icon";
                 newInputContainer.innerHTML = `
             <input type="text" placeholder="Enter Department Name" required>
-            <i class="fa fa-times cancel-icon" aria-hidden="true"></i>
-        `;
+            <i class="fa fa-times cancel-icon" aria-hidden="true"></i>`;
                 inputContainer.appendChild(newInputContainer);
 
                 let cancelIcons = document.querySelectorAll(".cancel-icon");
@@ -450,72 +514,96 @@
 
         // Below the code for list all the department
         const token = sessionStorage.getItem('token');
+        if (loader) {
+            loader.style.display = 'block'
 
-        function listAllDepartment() {
-            let depContainer = document.getElementById('dep-container-div');
-            let departCount = document.getElementById('count');
+            function listAllDepartment() {
+                let depContainer = document.getElementById('dep-container-div');
+                let departCount = document.getElementById('count');
 
-            const url = 'http://localhost:8000/api/Department/listall';
-            fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                    }
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`${res.status}`);
-                    } else {
-                        return res.json();
-                    }
-                }).then(data => {
-                    let depCard = '';
-                    data.forEach(deparment => {
-                        depCard += `<div class="dep-card">
+                const url = 'http://localhost:8000/api/Department/listall';
+                fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`${res.status}`);
+                        } else {
+                            return res.json();
+                        }
+                    }).then(data => {
+                        loader.style.display = 'none';
+                        let depCard = '';
+                        data.forEach(deparment => {
+                            depCard += `<div class="dep-card">
                     <h6 class="dep-name">${deparment.name}</h6>
                     <p class="dep-date">'Created on ${deparment.formattedCreatedAt}'</p>
                 </div>`;
-                        depContainer.innerHTML = depCard;
-                        departCount.innerText = data.length;
-                    });
+                            depContainer.innerHTML = depCard;
+                            departCount.innerText = data.length;
+                        });
 
-                })
-                .catch(error => {
-                    console.log(error);
-                })
+                    })
+                    .catch(error => {
+                        loader.style.display = 'none';
+                        console.log(error);
+                    })
 
-        };
+            };
 
-        function createDepartment() {
-            event.preventDefault();
-            const url = 'http://localhost:8000/api/Department/create';
-            let departName = document.getElementById('department').value;
-            console.log(departName);
+            function createDepartment() {
+                event.preventDefault();
+                const url = 'http://localhost:8000/api/Department/create';
+                let departName = document.getElementById('department').value;
+                console.log(departName);
 
-            fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({
-                        "name": departName
-                    }),
-                })
-                .then(res => {
-                    if (res.ok) {
-                        return res.json();
-                        listAllDepartment();
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify({
+                            "name": departName
+                        }),
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            return res.json();
+                            listAllDepartment();
+                        }
+                    })
+                    .then(data => {
+                        loader.style.display = 'none';
+                        console.log(data);
+                        location.reload();
+                    })
+                    .catch(error => {
+                        loader.style.display = 'none';
+                        console.log(error);
+                    })
+            }
+
+            function filterDepartments(event) {
+                const searchTerm = event.target.value.toLowerCase();
+                const depContainerDiv = document.getElementById('dep-container-div');
+                const departmentCards = depContainerDiv.getElementsByClassName('dep-card');
+
+                for (let i = 0; i < departmentCards.length; i++) {
+                    const departmentCard = departmentCards[i];
+                    const departmentName = departmentCard.getElementsByClassName('dep-name')[0].textContent.toLowerCase();
+
+                    if (departmentName.includes(searchTerm)) {
+                        departmentCard.style.display = 'block';
+                    } else {
+                        departmentCard.style.display = 'none';
                     }
-                })
-                .then(data => {
-                    console.log(data);
-                    location.reload();
-                })
-                .catch(error => {
-                    console.log(error);
-                })
+                }
+            }
         }
 
         listAllDepartment();

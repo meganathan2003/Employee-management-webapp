@@ -282,11 +282,74 @@
             align-items: center;
             justify-content: center;
         }
+
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: none;
+            position: absolute;
+            top: 55%;
+            right: 40%;
+            z-index: 1;
+            border: 8px solid #514b82;
+            animation:
+                l20-1 0.8s infinite linear alternate,
+                l20-2 1.6s infinite linear;
+        }
+
+        @keyframes l20-1 {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+            }
+
+            12.5% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+            }
+
+            25% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+            }
+
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            62.5% {
+                clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            75% {
+                clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            100% {
+                clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+            }
+        }
+
+        @keyframes l20-2 {
+            0% {
+                transform: scaleY(1) rotate(0deg)
+            }
+
+            49.99% {
+                transform: scaleY(1) rotate(135deg)
+            }
+
+            50% {
+                transform: scaleY(-1) rotate(0deg)
+            }
+
+            100% {
+                transform: scaleY(-1) rotate(-135deg)
+            }
+        }
     </style>
 </head>
 
 <body>
-
+    <div class="loader" id="loader"></div>
     <header>
         <div class="head">
             <img id="logo" src="login-img.png" alt="">
@@ -336,7 +399,7 @@
         <h1>My Employees</h1>
         <div class="search-div">
             <h6><span id="count"></span> Employees</h6>
-            <input id="search" type="text" placeholder="&#xF002;  Search" style="font-family:Arial, FontAwesome" />
+            <input id="search" type="text" placeholder="&#xF002;  Search" style="font-family:Arial, FontAwesome" oninput="filterEmployees(event)" />
         </div>
     </div>
 
@@ -367,100 +430,127 @@
         // Below the code for fetch api
         let employeeDetails;
         const token = sessionStorage.getItem('token');
+        let loader = document.getElementById('loader');
+
         if (!token || token === undefined || token === '' || token === null) {
             window.location.href = 'error.php';
         } else {
             function listAllEmployee() {
+
                 const url = 'http://localhost:8000/api/Employee/listall';
 
                 console.log(token);
+                if (loader) {
+                    loader.style.display = 'block';
 
-                fetch(url, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            'Authorization': 'Bearer ' + token,
-                        }
-                    })
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error(`${res.status}`);
-                        } else {
-                            return res.json();
-                        }
-                    })
-                    .then(data => {
-                        employeeDetails = data;
-                        let count = employeeDetails.length;
+                    fetch(url, {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                'Authorization': 'Bearer ' + token,
+                            }
+                        })
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error(`${res.status}`);
+                            } else {
+                                return res.json();
+                            }
+                        })
+                        .then(data => {
+                            loader.style.display = 'none';
+                            employeeDetails = data;
+                            let count = employeeDetails.length;
 
-                        // display the employee details using forEach
-                        employeeDetails.forEach(employee => {
+                            // display the employee details using forEach
+                            employeeDetails.forEach(employee => {
 
-                            let empContainer = document.getElementById('emp-container-div');
-                            let empCardDiv = document.createElement('div');
-                            empCardDiv.setAttribute('class', 'emp-card');
-                            let imgTag = document.createElement('img');
-                            imgTag.setAttribute('class', 'emp-pic');
-                            imgTag.setAttribute('src', 'winnie.jpg');
-                            let hTag = document.createElement('h6');
-                            hTag.textContent = employee.name;
-                            let pTag = document.createElement('p');
-                            pTag.setAttribute('class', 'emp-team');
-                            pTag.textContent = employee.department;
-                            let hrTag = document.createElement('hr');
+                                let empContainer = document.getElementById('emp-container-div');
+                                let empCardDiv = document.createElement('div');
+                                empCardDiv.setAttribute('class', 'emp-card');
+                                let imgTag = document.createElement('img');
+                                imgTag.setAttribute('class', 'emp-pic');
+                                imgTag.setAttribute('src', 'winnie.jpg');
+                                let hTag = document.createElement('h6');
+                                hTag.textContent = employee.name;
+                                let pTag = document.createElement('p');
+                                pTag.setAttribute('class', 'emp-team');
+                                pTag.textContent = employee.department;
+                                let hrTag = document.createElement('hr');
 
-                            // Append the child one
-                            empCardDiv.append(imgTag);
-                            empCardDiv.append(hTag);
-                            empCardDiv.append(pTag);
-                            empCardDiv.append(hrTag);
+                                // Append the child one
+                                empCardDiv.append(imgTag);
+                                empCardDiv.append(hTag);
+                                empCardDiv.append(pTag);
+                                empCardDiv.append(hrTag);
 
-                            let contactDiv = document.createElement('div');
-                            contactDiv.setAttribute('class', 'contact');
-                            let contactContainerDiv = document.createElement('div');
-                            contactContainerDiv.setAttribute('class', 'contact-container');
-                            let img2 = document.createElement('img');
-                            img2.setAttribute('class', 'mail');
-                            img2.setAttribute('src', '2754-removebg-preview.png');
-                            let a = document.createElement('a');
-                            a.setAttribute('class', 'emp-contact');
-                            a.setAttribute('href', '');
-                            a.textContent = 'Mail';
+                                let contactDiv = document.createElement('div');
+                                contactDiv.setAttribute('class', 'contact');
+                                let contactContainerDiv = document.createElement('div');
+                                contactContainerDiv.setAttribute('class', 'contact-container');
+                                let img2 = document.createElement('img');
+                                img2.setAttribute('class', 'mail');
+                                img2.setAttribute('src', '2754-removebg-preview.png');
+                                let a = document.createElement('a');
+                                a.setAttribute('class', 'emp-contact');
+                                a.setAttribute('href', '');
+                                a.textContent = 'Mail';
 
-                            // Append the child elements
-                            contactContainerDiv.append(img2);
-                            contactContainerDiv.append(a);
-                            contactDiv.append(contactContainerDiv);
+                                // Append the child elements
+                                contactContainerDiv.append(img2);
+                                contactContainerDiv.append(a);
+                                contactDiv.append(contactContainerDiv);
 
-                            let contactContainerDiv2 = document.createElement('div');
-                            contactContainerDiv2.setAttribute('class', 'contact-container');
-                            let callImg = document.createElement('img');
-                            callImg.setAttribute('class', 'mail');
-                            callImg.setAttribute('src', 'phone-removebg-preview.png');
-                            let a2 = document.createElement('a');
-                            a2.setAttribute('class', 'emp-contact');
-                            a2.setAttribute('href', '');
-                            a2.textContent = 'Mail';
+                                let contactContainerDiv2 = document.createElement('div');
+                                contactContainerDiv2.setAttribute('class', 'contact-container');
+                                let callImg = document.createElement('img');
+                                callImg.setAttribute('class', 'mail');
+                                callImg.setAttribute('src', 'phone-removebg-preview.png');
+                                let a2 = document.createElement('a');
+                                a2.setAttribute('class', 'emp-contact');
+                                a2.setAttribute('href', '');
+                                a2.textContent = 'Mail';
 
-                            let employeeCount = document.getElementById('count');
-                            employeeCount.textContent = count;
+                                let employeeCount = document.getElementById('count');
+                                employeeCount.textContent = count;
 
-                            contactContainerDiv2.append(callImg);
-                            contactContainerDiv2.append(a2);
-                            contactDiv.append(contactContainerDiv2);
-                            empCardDiv.append(contactDiv);
-                            empContainer.append(empCardDiv);
+                                contactContainerDiv2.append(callImg);
+                                contactContainerDiv2.append(a2);
+                                contactDiv.append(contactContainerDiv2);
+                                empCardDiv.append(contactDiv);
+                                empContainer.append(empCardDiv);
 
-                            // Add click event listener to the emp-card div
-                            empCardDiv.addEventListener('click', () => {
-                                localStorage.setItem('employeeId', employee.id);
-                                window.location.href = 'employee-view.php';
+                                // Add click event listener to the emp-card div
+                                empCardDiv.addEventListener('click', () => {
+                                    localStorage.setItem('employeeId', employee.id);
+                                    window.location.href = 'employee-view.php';
+                                });
                             });
+                        })
+                        .catch(error => {
+                            loader.style.display = 'none';
+                            console.log(error);
                         });
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
+                }
+            }
+
+            function filterEmployees(event) {
+                const searchTerm = event.target.value.toLowerCase();
+                const empContainerDiv = document.getElementById('emp-container-div');
+                const employeeCards = empContainerDiv.getElementsByClassName('emp-card');
+
+                for (let i = 0; i < employeeCards.length; i++) {
+                    const employeeCard = employeeCards[i];
+                    const employeeName = employeeCard.getElementsByTagName('h6')[0].textContent.toLowerCase();
+                    console.log(employeeName);
+                    const employeeDepartment = employeeCard.getElementsByClassName('emp-team')[0].textContent.toLowerCase();
+
+                    if (employeeName.includes(searchTerm) || employeeDepartment.includes(searchTerm)) {
+                        employeeCard.style.display = 'block';
+                    } else {
+                        employeeCard.style.display = 'none';
+                    }
+                }
             }
             listAllEmployee();
         }
