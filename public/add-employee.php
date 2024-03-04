@@ -387,80 +387,84 @@
 
         // Below the code for connectivity using the fetch api
         const token = sessionStorage.getItem('token');
+        
+        if (!token || token === '' || token === undefined || token === null) {
+            window.location.href = 'error.php';
+        } else {
+            function dropdown() {
+                const url = 'http://localhost:8000/api/Department/dropdown';
+                let selectTag = document.getElementById('department');
+                fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Conten-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                        }
+                    }).then(res => {
+                        if (res.ok) {
+                            return res.json();
+                        }
+                    })
+                    .then(response => {
+                        console.log(response.data);
+                        const departmentNames = Object.values(response.data);
+                        console.log(departmentNames);
+                        departmentNames.forEach(name => {
+                            const option = document.createElement('option');
+                            option.value = name;
+                            option.textContent = name;
+                            selectTag.appendChild(option);
+                        });
 
-        function dropdown() {
-            const url = 'http://localhost:8000/api/Department/dropdown';
-            let selectTag = document.getElementById('department');
-            fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Conten-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                    }
-                }).then(res => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-                })
-                .then(response => {
-                    console.log(response.data);
-                    const departmentNames = Object.values(response.data);
-                    console.log(departmentNames);
-                    departmentNames.forEach(name => {
-                        const option = document.createElement('option');
-                        option.value = name;
-                        option.textContent = name;
-                        selectTag.appendChild(option);
                     });
+            }
 
-                });
+            function createEmployee() {
+                event.preventDefault();
+                const url = 'http://localhost:8000/api/Employee/create';
+
+                const nameInput = document.getElementById('employee-name').value;
+                const emailInput = document.getElementById('email').value;
+                const dobInput = document.getElementById('dob').value;
+                const addressInput = document.getElementById('address').value;
+                const deptInput = document.getElementById('department').value;
+                const contactInput = document.getElementById('contact-number').value;
+                const bloodInput = document.getElementById('blood-group').value;
+
+                const data = {
+                    name: nameInput,
+                    email: emailInput,
+                    date_of_birth: dobInput,
+                    address: addressInput,
+                    department: deptInput,
+                    contact_number: contactInput,
+                    blood_group: bloodInput
+                };
+                console.log(data);
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                        },
+                        body: JSON.stringify(data)
+                    }).then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP ERROR ! ${res.status}`);
+                        } else {
+                            return res.json();
+                        }
+                    })
+                    .then(data => {
+                        console.log(data);
+                        window.location.href = 'employee.php';
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+            }
+            dropdown();
         }
-
-        function createEmployee() {
-            event.preventDefault();
-            const url = 'http://localhost:8000/api/Employee/create';
-
-            const nameInput = document.getElementById('employee-name').value;
-            const emailInput = document.getElementById('email').value;
-            const dobInput = document.getElementById('dob').value;
-            const addressInput = document.getElementById('address').value;
-            const deptInput = document.getElementById('department').value;
-            const contactInput = document.getElementById('contact-number').value;
-            const bloodInput = document.getElementById('blood-group').value;
-
-            const data = {
-                name: nameInput,
-                email: emailInput,
-                date_of_birth: dobInput,
-                address: addressInput,
-                department: deptInput,
-                contact_number: contactInput,
-                blood_group: bloodInput
-            };
-            console.log(data);
-            fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                    },
-                    body: JSON.stringify(data)
-                }).then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP ERROR ! ${res.status}`);
-                    } else {
-                        return res.json();
-                    }
-                })
-                .then(data => {
-                    console.log(data);
-                    window.location.href = 'employee.php';
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-        }
-        dropdown();
     </script>
 </body>
 

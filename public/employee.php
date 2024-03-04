@@ -366,100 +366,104 @@
 
         // Below the code for fetch api
         let employeeDetails;
+        const token = sessionStorage.getItem('token');
+        if (!token || token === undefined || token === '' || token === null) {
+            window.location.href = 'error.php';
+        } else {
+            function listAllEmployee() {
+                const url = 'http://localhost:8000/api/Employee/listall';
 
-        function listAllEmployee() {
-            const url = 'http://localhost:8000/api/Employee/listall';
-            const token = sessionStorage.getItem('token');
-            console.log(token);
+                console.log(token);
 
-            fetch(url, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Authorization': 'Bearer ' + token,
-                    }
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`${res.status}`);
-                    } else {
-                        return res.json();
-                    }
-                })
-                .then(data => {
-                    employeeDetails = data;
-                    let count = employeeDetails.length;
+                fetch(url, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Authorization': 'Bearer ' + token,
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`${res.status}`);
+                        } else {
+                            return res.json();
+                        }
+                    })
+                    .then(data => {
+                        employeeDetails = data;
+                        let count = employeeDetails.length;
 
-                    // display the employee details using forEach
-                    employeeDetails.forEach(employee => {
+                        // display the employee details using forEach
+                        employeeDetails.forEach(employee => {
 
-                        let empContainer = document.getElementById('emp-container-div');
-                        let empCardDiv = document.createElement('div');
-                        empCardDiv.setAttribute('class', 'emp-card');
-                        let imgTag = document.createElement('img');
-                        imgTag.setAttribute('class', 'emp-pic');
-                        imgTag.setAttribute('src', 'winnie.jpg');
-                        let hTag = document.createElement('h6');
-                        hTag.textContent = employee.name;
-                        let pTag = document.createElement('p');
-                        pTag.setAttribute('class', 'emp-team');
-                        pTag.textContent = employee.department;
-                        let hrTag = document.createElement('hr');
+                            let empContainer = document.getElementById('emp-container-div');
+                            let empCardDiv = document.createElement('div');
+                            empCardDiv.setAttribute('class', 'emp-card');
+                            let imgTag = document.createElement('img');
+                            imgTag.setAttribute('class', 'emp-pic');
+                            imgTag.setAttribute('src', 'winnie.jpg');
+                            let hTag = document.createElement('h6');
+                            hTag.textContent = employee.name;
+                            let pTag = document.createElement('p');
+                            pTag.setAttribute('class', 'emp-team');
+                            pTag.textContent = employee.department;
+                            let hrTag = document.createElement('hr');
 
-                        // Append the child one
-                        empCardDiv.append(imgTag);
-                        empCardDiv.append(hTag);
-                        empCardDiv.append(pTag);
-                        empCardDiv.append(hrTag);
+                            // Append the child one
+                            empCardDiv.append(imgTag);
+                            empCardDiv.append(hTag);
+                            empCardDiv.append(pTag);
+                            empCardDiv.append(hrTag);
 
-                        let contactDiv = document.createElement('div');
-                        contactDiv.setAttribute('class', 'contact');
-                        let contactContainerDiv = document.createElement('div');
-                        contactContainerDiv.setAttribute('class', 'contact-container');
-                        let img2 = document.createElement('img');
-                        img2.setAttribute('class', 'mail');
-                        img2.setAttribute('src', '2754-removebg-preview.png');
-                        let a = document.createElement('a');
-                        a.setAttribute('class', 'emp-contact');
-                        a.setAttribute('href', '');
-                        a.textContent = 'Mail';
+                            let contactDiv = document.createElement('div');
+                            contactDiv.setAttribute('class', 'contact');
+                            let contactContainerDiv = document.createElement('div');
+                            contactContainerDiv.setAttribute('class', 'contact-container');
+                            let img2 = document.createElement('img');
+                            img2.setAttribute('class', 'mail');
+                            img2.setAttribute('src', '2754-removebg-preview.png');
+                            let a = document.createElement('a');
+                            a.setAttribute('class', 'emp-contact');
+                            a.setAttribute('href', '');
+                            a.textContent = 'Mail';
 
-                        // Append the child elements
-                        contactContainerDiv.append(img2);
-                        contactContainerDiv.append(a);
-                        contactDiv.append(contactContainerDiv);
+                            // Append the child elements
+                            contactContainerDiv.append(img2);
+                            contactContainerDiv.append(a);
+                            contactDiv.append(contactContainerDiv);
 
-                        let contactContainerDiv2 = document.createElement('div');
-                        contactContainerDiv2.setAttribute('class', 'contact-container');
-                        let callImg = document.createElement('img');
-                        callImg.setAttribute('class', 'mail');
-                        callImg.setAttribute('src', 'phone-removebg-preview.png');
-                        let a2 = document.createElement('a');
-                        a2.setAttribute('class', 'emp-contact');
-                        a2.setAttribute('href', '');
-                        a2.textContent = 'Mail';
+                            let contactContainerDiv2 = document.createElement('div');
+                            contactContainerDiv2.setAttribute('class', 'contact-container');
+                            let callImg = document.createElement('img');
+                            callImg.setAttribute('class', 'mail');
+                            callImg.setAttribute('src', 'phone-removebg-preview.png');
+                            let a2 = document.createElement('a');
+                            a2.setAttribute('class', 'emp-contact');
+                            a2.setAttribute('href', '');
+                            a2.textContent = 'Mail';
 
-                        let employeeCount = document.getElementById('count');
-                        employeeCount.textContent = count;
+                            let employeeCount = document.getElementById('count');
+                            employeeCount.textContent = count;
 
-                        contactContainerDiv2.append(callImg);
-                        contactContainerDiv2.append(a2);
-                        contactDiv.append(contactContainerDiv2);
-                        empCardDiv.append(contactDiv);
-                        empContainer.append(empCardDiv);
+                            contactContainerDiv2.append(callImg);
+                            contactContainerDiv2.append(a2);
+                            contactDiv.append(contactContainerDiv2);
+                            empCardDiv.append(contactDiv);
+                            empContainer.append(empCardDiv);
 
-                        // Add click event listener to the emp-card div
-                        empCardDiv.addEventListener('click', () => {
-                            localStorage.setItem('employeeId', employee.id);
-                            window.location.href = 'employee-view.php';
+                            // Add click event listener to the emp-card div
+                            empCardDiv.addEventListener('click', () => {
+                                localStorage.setItem('employeeId', employee.id);
+                                window.location.href = 'employee-view.php';
+                            });
                         });
+                    })
+                    .catch(error => {
+                        console.log(error);
                     });
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+            }
+            listAllEmployee();
         }
-        listAllEmployee();
     </script>
 </body>
 
