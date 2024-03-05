@@ -331,11 +331,73 @@
             align-items: center;
             justify-content: center;
         }
+
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            position: absolute;
+            top: 55%;
+            right: 40%;
+            z-index: 1;
+            border: 8px solid #514b82;
+            animation:
+                l20-1 0.8s infinite linear alternate,
+                l20-2 1.6s infinite linear;
+        }
+
+        @keyframes l20-1 {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+            }
+
+            12.5% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+            }
+
+            25% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+            }
+
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            62.5% {
+                clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            75% {
+                clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            100% {
+                clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+            }
+        }
+
+        @keyframes l20-2 {
+            0% {
+                transform: scaleY(1) rotate(0deg)
+            }
+
+            49.99% {
+                transform: scaleY(1) rotate(135deg)
+            }
+
+            50% {
+                transform: scaleY(-1) rotate(0deg)
+            }
+
+            100% {
+                transform: scaleY(-1) rotate(-135deg)
+            }
+        }
     </style>
 </head>
 
 <body>
-
+    <div class="loader" id="loader"></div>
     <header>
         <div class="head">
             <img id="logo" src="login-img.png" alt="">
@@ -387,61 +449,6 @@
 
 
     <div class="employee-container" id="emp-container">
-        <!-- <div class="employee-content">
-            <div>
-                <img class="emp-image" src="tillie.jpg" alt="">
-            </div>
-            <div class="main-content">
-                <div class="content">
-                    <div>
-                        <h3 class="emp-name">Tille Jackson</h3>
-                    </div>
-                    <div class="contact">
-                        <div class="contact-container">
-                            <img class="mail" src="2754-removebg-preview.png" />
-                            <a class="emp-contact" href="">Mail</a>
-                        </div>
-
-                        <div class="contact-container">
-                            <img class="mail" src="phone-removebg-preview.png" />
-                            <a class="emp-contact" href="">Call</a>
-                        </div>
-                    </div>
-                </div>
-                <p class="emp-team">Marketing Team</p>
-                <hr>
-                <div class="bottom-content">
-                    <div style="padding-right: 50px;">
-                        <img class="emp-mail" src="mail-grey-removebg-preview.png" />
-                        <a class="employee-contact" href="">vunvez@dovihsi.co.uk</a>
-                    </div>
-                    <div>
-                        <img class="mail" src="phone-call-icon-256x256-7yhsea5m-removebg-preview.png" />
-                        <a class="employee-contact" href="">(269) 736-3689</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="basic-content">
-            <h4>Basic Information</h4>
-            <hr>
-
-            <div class="info">
-                <div>
-                    <p class="details">Date of Birth</p>
-                    <p class="details">Blood Group</p>
-                    <p class="details">Address</p>
-                </div>
-                <div>
-                    <p class="value">17 Nov, 1987</p>
-                    <p class="value">AB+ve</p>
-                    <p class="value">785 Duwud River, <br>
-                        kacohwe, Minnesota, <br>
-                        Burundi - 21087
-                    </p>
-                </div>
-            </div>
-        </div> -->
     </div>
 
 
@@ -452,26 +459,29 @@
 
         // below the code for fetch api
         let token = sessionStorage.getItem('token');
+        const loader = document.getElementById('loader');
         async function showEmployee() {
             let empContainer = document.getElementById('emp-container');
-            try {
-                const response = await fetch('http://localhost:8000/api/Employee/show', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Authorization': 'Bearer ' + token,
-                    },
-                    body: JSON.stringify({
-                        id: localStorage.getItem('employeeId'),
-                    }),
-                });
+            if (loader) {
+                loader.style.display = 'block';
+                try {
+                    const response = await fetch('http://localhost:8000/api/Employee/show', {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Authorization': 'Bearer ' + token,
+                        },
+                        body: JSON.stringify({
+                            id: localStorage.getItem('employeeId'),
+                        }),
+                    });
 
-                if (response.ok) {
-                    const employee = await response.json();
-                    console.log(employee.data);
-                    const employeeView = `<div class="employee-content">
+                    if (response.ok) {
+                        const employee = await response.json();
+                        loader.style.display = 'none';
+                        const employeeView = `<div class="employee-content">
     <div>
-        <img class="emp-image" src="tillie.jpg" alt="">
+        <img class="emp-image" src="images/${employee.data.image}" alt="">
     </div>
     <div class="main-content">
         <div class="content">
@@ -522,13 +532,14 @@
         </div>
     </div>
 </div>`;
-                    empContainer.innerHTML = employeeView;
+                        empContainer.innerHTML = employeeView;
 
-                } else {
-                    throw new Error('Failed to retrieve employee.');
+                    } else {
+                        throw new Error('Failed to retrieve employee.');
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
-            } catch (error) {
-                console.error(error);
             }
         }
 

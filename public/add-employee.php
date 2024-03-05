@@ -393,12 +393,12 @@
     </div>
 
     <div class="main-container">
-        <form onsubmit="createEmployee()" method="POST">
-            <div class="form-row">
+        <form onsubmit="createEmployee()" method="POST" enctype="multipart/form-data">
+            <div class=" form-row">
                 <label for="upload-file">
                     <img id="img-upload" src="upload-img.png" alt="Upload Image">
                 </label>
-                <input id="upload-file" type="file" accept="image/*" style="display: none;">
+                <input id="upload-file" name="image" type="file" accept="image/*" style="display: none;">
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -449,6 +449,19 @@
             });
         });
 
+        const imageInput = document.getElementById('upload-file');
+        const imageDisplay = document.getElementById('img-upload');
+
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                imageDisplay.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
         // Below the code for connectivity using the fetch api
         const token = sessionStorage.getItem('token');
         const loader = document.getElementById('loader');
@@ -496,6 +509,7 @@
                 const deptInput = document.getElementById('department').value;
                 const contactInput = document.getElementById('contact-number').value;
                 const bloodInput = document.getElementById('blood-group').value;
+                const imageInput = document.getElementById('upload-file').files[0];
 
                 const data = {
                     name: nameInput,
@@ -504,32 +518,48 @@
                     address: addressInput,
                     department: deptInput,
                     contact_number: contactInput,
-                    blood_group: bloodInput
+                    blood_group: bloodInput,
+                    image: null
                 };
-                if (loader) {
-                    loader.style.display = 'block';
-                    fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + token,
-                            },
-                            body: JSON.stringify(data)
-                        }).then(res => {
-                            if (!res.ok) {
-                                throw new Error(`HTTP ERROR ! ${res.status}`);
-                            } else {
-                                return res.json();
-                            }
-                        })
-                        .then(data => {
-                            loader.style.display = 'none';
-                            window.location.href = 'employee.php';
-                        })
-                        .catch(error => {
-                            loader.style.display = 'none';
-                            console.log(error);
-                        });
+
+                if (imageInput) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        data.image = reader.result;
+                        sendData(data);
+                    };
+                    reader.readAsDataURL(imageInput);
+                    console.log(reader);
+                } else {
+                    sendData(data);
+                }
+
+                function sendData(data) {
+                    if (loader) {
+                        loader.style.display = 'block';
+                        fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token,
+                                },
+                                body: JSON.stringify(data)
+                            }).then(res => {
+                                if (!res.ok) {
+                                    throw new Error(`HTTP ERROR ! ${res.status}`);
+                                } else {
+                                    return res.json();
+                                }
+                            })
+                            .then(data => {
+                                loader.style.display = 'none';
+                                window.location.href = 'employee.php';
+                            })
+                            .catch(error => {
+                                loader.style.display = 'none';
+                                console.log(error);
+                            });
+                    }
                 }
             }
             dropdown();

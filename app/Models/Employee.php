@@ -12,9 +12,10 @@ class Employee extends Model
         'name',
         'email',
         'date_of_birth',
+        'image',
         'address',
         'department',
         'contact_number',
-        'blood_group',
-    ];
+        'blood_group'
+    ]; 
 }

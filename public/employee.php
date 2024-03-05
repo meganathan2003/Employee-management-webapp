@@ -470,7 +470,7 @@
                                 empCardDiv.setAttribute('class', 'emp-card');
                                 let imgTag = document.createElement('img');
                                 imgTag.setAttribute('class', 'emp-pic');
-                                imgTag.setAttribute('src', 'winnie.jpg');
+                                imgTag.setAttribute('src', `images/${employee.image}`);
                                 let hTag = document.createElement('h6');
                                 hTag.textContent = employee.name;
                                 let pTag = document.createElement('p');

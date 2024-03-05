@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->date('date_of_birth');
+            $table->string('image');
             $table->text('address');
             $table->string('department');
             $table->string('contact_number');
